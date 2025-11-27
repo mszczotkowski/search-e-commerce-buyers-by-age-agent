@@ -1,0 +1,13 @@
+[project]
+name = "search-e-commerce-buyers-by-age-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "langchain>=1.0.7",
+    "langchain-openai>=1.0.3",
+    "langchain-tavily>=0.2.13",
+    "python-dotenv>=1.2.1",
+    "tavily-python>=0.7.13",
+]
