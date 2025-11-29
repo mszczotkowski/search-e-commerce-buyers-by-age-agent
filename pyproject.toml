@@ -8,6 +8,7 @@ dependencies = [
     "langchain>=1.0.7",
     "langchain-openai>=1.0.3",
     "langchain-tavily>=0.2.13",
+    "pydantic>=2.12.4",
     "python-dotenv>=1.2.1",
     "tavily-python>=0.7.13",
 ]
