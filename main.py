@@ -3,78 +3,66 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 load_dotenv()
 from langchain.agents import create_agent
-from langchain.tools import tool
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
 
-# from langsmith import uuid7, Client
-# client=Client()
-# run_id = uuid7()
-# client.create_run(
-#     id=run_id,
-#     name="test-run"
-# )
-# MESSAGE = "What is the weather in Tokyo?"
-MESSAGE = ("Jesteś asystentem pomagającym w znalezieniu danych statystycznych w Internecie."
-           "Twoim zadaniem jest wyszukanie danych o liczbie e-commerce buyers w United Kingdom."
-           "e-commerce buyers to osoby, które w ostatnich 12 miesiącach kupiły lub zamówiły towary lub usługi przez internet."
-           "Dane powinny pochodzić z oficjalnych źródeł."
-           "Liczba e-commerce buyers powinna być podzielona na grupy wiekowe."
-           "Jeśli znajdziesz jedynie odsetek (%) e-commerce buyers w różnych grupach wiekowych znajdź również łączną liczbę "
-           "osób w danym przedziale wiekowym i przemnóż odsetek e-buyers przez liczbę osób w danej grupie wiekowej"
-           "Zastosuj najświerzsze dane dotyczące struktury ludności oraz najświerzsze dane dotyczące odsetka e-commerce buyers."
-           "Jeśli nie znajdziesz wiarygodnych danych dla United Kingdom znajdź dane jedynie dla Great Britan."
-           "To już wszystkie instrukcje jakie możesz otrzymać. Znajdź najdokładniejsze informacje.")
+MESSAGE = ("""
+You are an assistant retrieving official statistical data from the Internet.
+Your task is to find or calculate the number of e-commerce buyers in the United Kingdom by age groups and provide a short methodology note.
 
-MESSAGE = ("Jesteś asystentem pomagającym w znalezieniu danych statystycznych w Internecie."
-           "Twoim zadaniem jest wyszukanie danych o liczbie e-commerce buyers w United Kingdom."
-           "e-commerce buyers to Online shopping of items or food deliveries "
-           "Dane powinny pochodzić z oficjalnych źródeł Na przykład: Ofcom 2024/2025 (UK)."
-           "Liczba e-commerce buyers powinna być podzielona na grupy wiekowe na przykład: 16–24, 25–34, 35–44, 45–54, 55–64, 65+"
-           "Jeśli takie grupy wiekowe są niedostępne użyj tych, które znajdziesz w  danych źródłowych"
-           "Jeśli znajdziesz jedynie odsetek (%) e-commerce buyers w różnych grupach wiekowych znajdź również łączną liczbę "
-           "osób w danym przedziale wiekowym i przemnóż odsetek e-buyers przez liczbę osób w danej grupie wiekowej"
-           "Użyj najnowszych liczebności populacji jakie znajdziesz”"
-           "Użyj najnowszych danych o odsetku e-commerce buyers jakie znajdziesz"
-)
-MESSAGE = ("Jesteś asystentem pomagającym w znalezieniu danych statystycznych w Internecie."
-           "Twoim zadaniem jest wyszukanie danych o liczbie e-commerce buyers w United Kingdom."
-           "e-commerce buyers to Online shopping of items or food deliveries"
-           "Jeśli znajdziesz inną definicję e-commerce buyers w danych źródłowych użyj jej"
-           "Dane powinny pochodzić z oficjalnych źródeł Na przykład: Ofcom 2024/2025 (UK)."
-           "Liczba e-commerce buyers powinna być podzielona na grupy wiekowe na przykład: 16–24, 25–34, 35–44, 45–54, 55–64, 65+"
-           "Jeśli takie grupy wiekowe są niedostępne użyj tych, które znajdziesz w  danych źródłowych"
-           "Jeśli znajdziesz jedynie odsetek (%) e-commerce buyers w różnych grupach wiekowych znajdź również łączną liczbę "
-           "osób w danym przedziale wiekowym i przemnóż odsetek e-buyers przez liczbę osób w danej grupie wiekowej"
-           "Użyj najnowszych liczebności populacji jakie znajdziesz”"
-           "Użyj najnowszych danych o odsetku e-commerce buyers jakie znajdziesz"
-           "W przypadku różnych dostępnych metod wyliczenia e-commerce buyers wybierz najlepszą"
-           "Pobierz dane ze źródeł jeśli to konieczne"
-           "Nie dopytuj. To wszystkie informacje jakie możesz otrzymać. "
-           "Przygotuj zestawienie"
-)
-# noinspection PyDataclass
-class ECommerceBuyersPerAge(BaseModel):
-    """Schema for number of e-commerce buyers per age group """
-    group: Dict[str, int] = Field(
-        default_factory=dict,
-        description="Mapping: age group to the number of e-commerce buyers")
+### OUTPUT FORMAT (REQUIRED)
+Return ONLY a valid Python dict in the format:
+
+{
+  "data": {
+    "16-24": number,
+    "25-34": number,
+    "35-44": number,
+    "45-54": number,
+    "55-64": number,
+    "65+": number
+  },
+  "methodology": "Short note in max 10 sentences explaining how the data was calculated and sources used"
+}
+
+No Markdown, no extra comments, no text outside this dict.
+
+### DATA COLLECTION RULES
+1. If you cannot find data in the first attempt, retry and consult alternative official sources.
+2. If sources provide only percentages (%) of e-commerce buyers, calculate absolute numbers using the latest demographic data for the UK.
+3. If available age groups differ, map them logically to the standard groups above.
+4. If multiple definitions of e-commerce buyers exist, use the one provided by the source.
+5. Never respond with 'data not found'. In case of uncertainty:
+   - use alternative official reports,
+   - estimate values based on available statistics,
+   - interpolate or adjust values using reasonable statistical assumptions.
+6. After generating the initial response, perform internal verification. Correct any inconsistencies before returning the final dict.
+
+### SOURCES
+Use only official data: Ofcom, ONS, UK Government, OECD, Statista (only if citing official sources).
+
+### GOAL
+Return only:
+- 'group' dict with numbers of e-commerce buyers by age group
+- 'methodology' with a short explanation of calculations and sources
+- 'sources' of data used for calculations
+""")
 
 class Source(BaseModel):
     """Schema for a source used by the agent"""
     url: str = Field(description="The URL of the source")
-
-class AgentResponse(BaseModel):
-    """Schema for agent response with answer and sources and """
-    answer: str = Field(description="The agent's answer to the query")
-    # noinspection PyDataclass
+# noinspection PyDataclass
+class ECommerceBuyersPerAge(BaseModel):
+    """Schema for number of e-commerce buyers per age group """
+    group: Dict[str, int] = Field(
+        default_factory=dict, description="Mapping of age group to the number of e-commerce buyers")
+    methodology: str = Field(description="Short methodology note describing how the data was collected, calculated, and sources used")
     sources: List[Source] = Field(default_factory=list, description="List of sources used to generate the answer")
-    ecb_list: ECommerceBuyersPerAge = Field(description="Dict with age groups and number of e-commerce buyers")
 
 llm = ChatOpenAI(model="gpt-5")
 tools = [TavilySearch()]
-agent = create_agent(model=llm, tools=tools, response_format=AgentResponse)
+agent = create_agent(model=llm, tools=tools, response_format=ECommerceBuyersPerAge)
 
 def main():
     # print("Hello from langchain-search-agent!")
