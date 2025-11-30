@@ -27,7 +27,33 @@ MESSAGE = ("Jesteś asystentem pomagającym w znalezieniu danych statystycznych 
            "Jeśli nie znajdziesz wiarygodnych danych dla United Kingdom znajdź dane jedynie dla Great Britan."
            "To już wszystkie instrukcje jakie możesz otrzymać. Znajdź najdokładniejsze informacje.")
 
-
+MESSAGE = ("Jesteś asystentem pomagającym w znalezieniu danych statystycznych w Internecie."
+           "Twoim zadaniem jest wyszukanie danych o liczbie e-commerce buyers w United Kingdom."
+           "e-commerce buyers to Online shopping of items or food deliveries "
+           "Dane powinny pochodzić z oficjalnych źródeł Na przykład: Ofcom 2024/2025 (UK)."
+           "Liczba e-commerce buyers powinna być podzielona na grupy wiekowe na przykład: 16–24, 25–34, 35–44, 45–54, 55–64, 65+"
+           "Jeśli takie grupy wiekowe są niedostępne użyj tych, które znajdziesz w  danych źródłowych"
+           "Jeśli znajdziesz jedynie odsetek (%) e-commerce buyers w różnych grupach wiekowych znajdź również łączną liczbę "
+           "osób w danym przedziale wiekowym i przemnóż odsetek e-buyers przez liczbę osób w danej grupie wiekowej"
+           "Użyj najnowszych liczebności populacji jakie znajdziesz”"
+           "Użyj najnowszych danych o odsetku e-commerce buyers jakie znajdziesz"
+)
+MESSAGE = ("Jesteś asystentem pomagającym w znalezieniu danych statystycznych w Internecie."
+           "Twoim zadaniem jest wyszukanie danych o liczbie e-commerce buyers w United Kingdom."
+           "e-commerce buyers to Online shopping of items or food deliveries"
+           "Jeśli znajdziesz inną definicję e-commerce buyers w danych źródłowych użyj jej"
+           "Dane powinny pochodzić z oficjalnych źródeł Na przykład: Ofcom 2024/2025 (UK)."
+           "Liczba e-commerce buyers powinna być podzielona na grupy wiekowe na przykład: 16–24, 25–34, 35–44, 45–54, 55–64, 65+"
+           "Jeśli takie grupy wiekowe są niedostępne użyj tych, które znajdziesz w  danych źródłowych"
+           "Jeśli znajdziesz jedynie odsetek (%) e-commerce buyers w różnych grupach wiekowych znajdź również łączną liczbę "
+           "osób w danym przedziale wiekowym i przemnóż odsetek e-buyers przez liczbę osób w danej grupie wiekowej"
+           "Użyj najnowszych liczebności populacji jakie znajdziesz”"
+           "Użyj najnowszych danych o odsetku e-commerce buyers jakie znajdziesz"
+           "W przypadku różnych dostępnych metod wyliczenia e-commerce buyers wybierz najlepszą"
+           "Pobierz dane ze źródeł jeśli to konieczne"
+           "Nie dopytuj. To wszystkie informacje jakie możesz otrzymać. "
+           "Przygotuj zestawienie"
+)
 # noinspection PyDataclass
 class ECommerceBuyersPerAge(BaseModel):
     """Schema for number of e-commerce buyers per age group """
@@ -44,7 +70,7 @@ class AgentResponse(BaseModel):
     answer: str = Field(description="The agent's answer to the query")
     # noinspection PyDataclass
     sources: List[Source] = Field(default_factory=list, description="List of sources used to generate the answer")
-    # ecb_list: ECommerceBuyersPerAge = Field(description="Dict with age groups and number of e-commerce buyers")
+    ecb_list: ECommerceBuyersPerAge = Field(description="Dict with age groups and number of e-commerce buyers")
 
 llm = ChatOpenAI(model="gpt-5")
 tools = [TavilySearch()]
