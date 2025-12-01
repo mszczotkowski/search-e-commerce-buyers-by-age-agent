@@ -44,7 +44,7 @@ Use only official data: Ofcom, ONS, UK Government, OECD, Statista (only if citin
 
 ### GOAL
 Return only:
-- 'group' dict with numbers of e-commerce buyers by age group
+- 'data' dict with numbers of e-commerce buyers by age group
 - 'methodology' with a short explanation of calculations and sources
 - 'sources' of data used for calculations
 """)
@@ -55,7 +55,7 @@ class Source(BaseModel):
 # noinspection PyDataclass
 class ECommerceBuyersPerAge(BaseModel):
     """Schema for number of e-commerce buyers per age group """
-    group: Dict[str, int] = Field(
+    data: Dict[str, int] = Field(
         default_factory=dict, description="Mapping of age group to the number of e-commerce buyers")
     methodology: str = Field(description="Short methodology note describing how the data was collected, calculated, and sources used")
     sources: List[Source] = Field(default_factory=list, description="List of sources used to generate the answer")
