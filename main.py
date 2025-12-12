@@ -65,9 +65,7 @@ tools = [TavilySearch()]
 agent = create_agent(model=llm, tools=tools, response_format=ECommerceBuyersPerAge)
 
 def main():
-    # print("Hello from langchain-search-agent!")
     result = agent.invoke({"messages": HumanMessage(content=MESSAGE)})
-    print(result["structured_response"].answer)
 
 
 if __name__ == "__main__":
